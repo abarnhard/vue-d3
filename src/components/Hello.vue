@@ -1,6 +1,6 @@
 <template lang="pug">
 div(class="chart")
-  svg(width="800" height="400")
+  svg(width="800" height="500")
     g(id="container")
       rect(v-for="bar in bars" class="bar" v-bind:x="bar.x" v-bind:y="bar.y" v-bind:width="bar.width" v-bind:height="bar.height")
       g(class="axis axis--y")
@@ -26,7 +26,7 @@ export default {
     this.$svg = d3.select('svg');
     this.$chartContainer = this.$svg.select('g#container');
 
-    const margin = { top: 20, right: 20, bottom: 20, left: 90 };
+    const margin = { top: 20, right: 20, bottom: 100, left: 100 };
     this.width = +this.$svg.attr('width') - margin.left - margin.right;
     this.height = +this.$svg.attr('height') - margin.top - margin.bottom;
 
@@ -49,7 +49,7 @@ export default {
   computed: {
     bars() {
       return this.metrics.map(metric => ({
-        x: this.xAxis(metric.classCode),
+        x: this.xAxis(metric.displayName),
         y: this.yAxis(metric.withinStandard + metric.outOfStandard),
         width: this.xAxis.bandwidth(),
         height: this.height - this.yAxis(metric.withinStandard + metric.outOfStandard),
@@ -58,7 +58,7 @@ export default {
   },
   methods: {
     drawGraph() {
-      this.xAxis.domain(this.metrics.map(metric => metric.classCode));
+      this.xAxis.domain(this.metrics.map(metric => metric.displayName));
       this.yAxis.domain([
         0,
         d3.max(this.metrics, metric => metric.withinStandard + metric.outOfStandard),
@@ -68,6 +68,11 @@ export default {
         .attr('transform', `translate(0, ${this.height})`);
 
       d3.axisBottom(this.xAxis)($xAxis);
+      $xAxis.selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-65)');
 
       const $yAxis = this.$chartContainer.select('g.axis.axis--y');
       d3.axisLeft(this.yAxis).ticks(10)($yAxis);
